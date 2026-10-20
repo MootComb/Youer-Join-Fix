@@ -68,10 +68,7 @@ public class Action {
     public final File MC_SRG;
     public final File MC_EXTRA;
     public final String mcpStart;
-    public final File mcpZip;
-    public final File MAPPINGS;
     public final File MINECRAFT_JAR;
-    public final File mojmap;
     public final File MERGED_MAPPINGS;
     public final File PATCHED;
     public final File PAPER_REMAP_0;
@@ -99,11 +96,7 @@ public class Action {
         this.MC_SRG = new File(otherStart + "-srg.jar");
         this.MC_EXTRA = new File(otherStart + "-extra.jar");
 
-        this.mojmap = new File(otherStart + "-mappings.txt");
-
         this.mcpStart = libPath + "net/neoforged/neoform/" + mcpVer + "/neoform-" + mcpVer;
-        this.mcpZip = new File(mcpStart + ".zip");
-        this.MAPPINGS = new File(mcpStart + "-mappings.txt");
         this.MERGED_MAPPINGS = new File(mcpStart + "-mappings-merged.txt");
         this.MINECRAFT_JAR = new File(libPath + "net/minecraft/server/" + mcVer + "/server-" + mcVer + ".jar");
         this.PATCHED = new File(forgeStart + "-server.jar");
@@ -133,38 +126,23 @@ public class Action {
 
         if (MINECRAFT_JAR.exists()) {
             tasks.add(new ConsoleToolTask(
-                    "net.neoforged.installertools.ConsoleTool",
-                    "--task", "BUNDLER_EXTRACT",
-                    "--input", MINECRAFT_JAR.getAbsolutePath(),
-                    "--output", libPath,
-                    "--libraries"
+                "net.neoforged.installertools.ConsoleTool",
+                "--task", "BUNDLER_EXTRACT",
+                "--input", MINECRAFT_JAR.getAbsolutePath(),
+                "--output", libPath,
+                "--libraries"
             ));
             if (!MC_UNPACKED.exists()) {
                 tasks.add(new ConsoleToolTask(
-                        "net.neoforged.installertools.ConsoleTool",
-                        "--task", "BUNDLER_EXTRACT",
-                        "--input", MINECRAFT_JAR.getAbsolutePath(),
-                        "--output", MC_UNPACKED.getAbsolutePath(),
-                        "--jar-only"
+                    "net.neoforged.installertools.ConsoleTool",
+                    "--task", "BUNDLER_EXTRACT",
+                    "--input", MINECRAFT_JAR.getAbsolutePath(),
+                    "--output", MC_UNPACKED.getAbsolutePath(),
+                    "--jar-only"
                 ));
             }
         } else {
             System.out.println(I18n.as("installation.minecraftserver") + MINECRAFT_JAR.getAbsolutePath());
-            System.exit(0);
-        }
-
-        if (mcpZip.exists()) {
-            if (!MAPPINGS.exists()) {
-                tasks.add(new ConsoleToolTask(
-                        "net.neoforged.installertools.ConsoleTool",
-                        "--task", "MCP_DATA",
-                        "--input", mcpZip.getAbsolutePath(),
-                        "--output", MAPPINGS.getAbsolutePath(),
-                        "--key", "mappings"
-                ));
-            }
-        } else {
-            System.out.println(I18n.as("installation.mcpfilemissing"));
             System.exit(0);
         }
 
@@ -173,33 +151,33 @@ public class Action {
 
         if (!MC_SLIM.exists()) {
             tasks.add(new ConsoleToolTask("net.neoforged.jarsplitter.ConsoleTool",
-                    "--input",
-                    MC_UNPACKED.getAbsolutePath(),
-                    "--slim",
-                    MC_SLIM.getAbsolutePath(),
-                    "--extra",
-                    MC_EXTRA.getAbsolutePath(),
-                    "--srg",
-                    MERGED_MAPPINGS.getAbsolutePath()));
+                "--input",
+                MC_UNPACKED.getAbsolutePath(),
+                "--slim",
+                MC_SLIM.getAbsolutePath(),
+                "--extra",
+                MC_EXTRA.getAbsolutePath(),
+                "--srg",
+                MERGED_MAPPINGS.getAbsolutePath()));
         }
 
         if (!MC_SRG.exists()) {
             tasks.add(new ConsoleToolTask("net.neoforged.art.Main",
-                    "--input", MC_SLIM.getAbsolutePath(),
-                    "--output", MC_SRG.getAbsolutePath(),
-                    "--names", MERGED_MAPPINGS.getAbsolutePath(),
-                    "--ann-fix",
-                    "--ids-fix",
-                    "--src-fix",
-                    "--record-fix"));
+                "--input", MC_SLIM.getAbsolutePath(),
+                "--output", MC_SRG.getAbsolutePath(),
+                "--names", MERGED_MAPPINGS.getAbsolutePath(),
+                "--ann-fix",
+                "--ids-fix",
+                "--src-fix",
+                "--record-fix"));
         }
 
         tasks.add(new PatchValidationTask(
-                installInfo,
-                PATCHED,
-                BINPATCH,
-                universalJar,
-                MC_SRG
+            installInfo,
+            PATCHED,
+            BINPATCH,
+            universalJar,
+            MC_SRG
         ));
 
         tasks.add(new JarMergeTask(PATCHED, universalJar, PAPER_REMAP_0));
@@ -400,13 +378,13 @@ public class Action {
             }
 
             if (!patchedFile.exists() || storedServerMD5 == null ||
-                    storedLzmaMD5 == null || !storedServerMD5.equals(serverMD5) ||
-                    !storedLzmaMD5.equals(lzmaMD5)) {
+                storedLzmaMD5 == null || !storedServerMD5.equals(serverMD5) ||
+                !storedLzmaMD5.equals(lzmaMD5)) {
 
                 run("net.neoforged.binarypatcher.ConsoleTool",
-                        "--clean", mcSrg.getAbsolutePath(),
-                        "--output", patchedFile.getAbsolutePath(),
-                        "--apply", binPatch.getAbsolutePath());
+                    "--clean", mcSrg.getAbsolutePath(),
+                    "--output", patchedFile.getAbsolutePath(),
+                    "--apply", binPatch.getAbsolutePath());
 
                 serverMD5 = SHA256.as(patchedFile);
             }
